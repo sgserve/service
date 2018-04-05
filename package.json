@@ -21,8 +21,8 @@
     "url": "git+ssh://git@github.com/sgserve/service.git"
   },
   "engines": {
-    "node": ">= 0.6"
-  },
+  "node": ">= 0.6"
+ },
   "author": "CUPDIR",
   "license": "MIT",
   "bugs": {

@@ -8,22 +8,21 @@ const   dns = require('dns');
 const   hostile = require('hostile')
 const   mkdirp = require('mkdirp');
 const   yaml = require('read-yaml');
+const   crypto=require('crypto');
 let config = yaml.sync('config.yaml');
-
 let server = http.createServer( (request , response ) => {});
 let domain = 'web.sanguosha.com';
 
 let search = function( file ){
+    let filemd5 = crypto.createHash("md5").update(file).digest('hex');
     for( i=0; i<config.length; i++ ){
-        if( file.match(config[i]) !== null ) {
+        if( filemd5  == crypto.createHash("md5").update(config[i]).digest('hex') ) {
             return true;
         }
-        return false;
     }
 }
 // 读取 替换 资源
 dns.lookup( domain,( err, address, family )=>{ //
-
     hostile.set('127.0.0.1', domain, (err)=> {
         if ( err  ) {
             console.error( err )
@@ -33,9 +32,9 @@ dns.lookup( domain,( err, address, family )=>{ //
             //http start
             server.on( 'request' , ( request , response ) =>{
                 // 这是一张我们个人常用武将里面的那个小图
-                //console.log(match  , request.url)
-                if ( true === search( request.url )) {
-                    console.log(request.url ,  ' 本地读取  ')
+                let exis = search( request.url ) ;
+                if ( exis ) {
+                    console.log('本地读取' , '文件名:',request.url)
                     //匹配到的就是我们要拦截的，读取我们自己的资源
                     let file = fs.readFileSync('resources'+request.url);
                     let contentType = mime.lookup(request.url);
