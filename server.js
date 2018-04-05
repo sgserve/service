@@ -8,7 +8,7 @@ const   dns = require('dns');
 const   hostile = require('hostile')
 const   mkdirp = require('mkdirp');
 const   yaml = require('read-yaml');
-let config = yaml.sync('config.yml');
+let config = yaml.sync('config.yaml');
 
 let server = http.createServer( (request , response ) => {});
 let domain = 'web.sanguosha.com';
