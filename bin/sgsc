@@ -109,7 +109,7 @@ command.on('path', () => {
 command.on('error', () => {
 
     console.log(`
-\x1b[31mupdns: Can't find the command\x1b[0m
+\x1b[31msgsc: Can't find the command\x1b[0m
 sgsc [Options]
 Options:
 | Command          | Explain                             |
