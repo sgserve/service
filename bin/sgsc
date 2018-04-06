@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const path = require('path')
+const daemon = require('./daemon')
+const   hostile = require('hostile')
+const EventEmitter = require('events').EventEmitter
+const pidpath   = path.join(__dirname, './../sgsc.pid')
+const command = new EventEmitter()
+let domain = 'web.sanguosha.com';
+command.on('start', () => {
+    let sgsc = daemon.createProcess(path.join(__dirname, './../index'))
+    sgsc.on('message', message => {
+        if(message.state === 1){
+            fs.writeFileSync(pidpath, sgsc.pid)
+             process.exit(0)
+        }else{
+            console.log(`\x1b[31mupdns: ${message.message}\x1b[0m`)
+        }
+    })
+
+})
+
+command.on('stop', over => {
+    fs.readFile(pidpath,{
+          encoding: 'utf-8'
+      },(err, pid) => {
+
+          if (err || !pid) {
+
+              console.log('\x1b[31msgsc: Please start the sgsc service first \'sudo sgsc start\'\x1b[0m')
+
+          } else {
+
+              try {
+                  // Does the process exist ?
+                  hostile.remove('127.0.0.1', domain, (err)=> {
+                    if (err) {
+                      console.error(err)
+                    } else {
+                      //console.log('set /etc/hosts successfully!')
+                      //process.exit(0);
+                    }
+                  })
+                  process.kill(pid, 0)
+
+                  try {
+
+                      daemon.killProcess(pid)
+                      fs.unlinkSync(pidpath)
+                      over &&
+                          over()
+
+                  }catch(env) {
+                      error(env)
+                  }
+
+              }catch(env) {
+                  error(env)
+              }
+
+          }
+      })
+
+       function error(e) {
+
+           if(e.code === 'ESRCH'){
+
+               console.log('\x1b[31msgsc: Can\'t find the service that is running\x1b[0m')
+
+           }else if(e.code === 'EPERM'){
+
+               console.log('\x1b[31msgsc: Please make sure that you have sufficient authority, Or use \'sudo sgsc stop\'\x1b[0m')
+
+           }else {
+
+               console.log(`\x1b[31msgsc: ${e.code}\x1b[0m`)
+
+           }
+
+       }
+
+})
+
+
+command.on('reload', () => {
+    command.emit('stop',() => command.emit('start'))
+
+})
+
+command.on('-v', () => {
+
+    let version = JSON.parse(
+        fs.readFileSync(
+            path.join(__dirname,'./../package.json'), 'utf-8'
+        )
+    ).version
+
+    console.log(`sgsc: version/${version}`)
+
+})
+
+command.on('path', () => {
+
+    console.log(`sgsc: ${path.join(__dirname, './../')}`)
+
+})
+
+command.on('error', () => {
+
+    console.log(`
+\x1b[31mupdns: Can't find the command\x1b[0m
+sgsc [Options]
+Options:
+| Command          | Explain                             |
+| -------------    | -------------                       |
+| 'start'          | Start the sgsc service               |
+| 'stop'           | Stop the sgsc services               |
+| 'reload'         | Reload the hosts configuration file |
+| 'path'           | View the installation directory     |
+| '-v'             | View version                        |
+`)
+
+})
+
+
+command.listenerCount(process.argv[2]) ? command.emit(process.argv[2]) : command.emit('error')
