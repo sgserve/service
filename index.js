@@ -9,7 +9,8 @@ const   hostile = require('hostile')
 const   mkdirp = require('mkdirp');
 const   yaml = require('read-yaml');
 const   crypto=require('crypto');
-let config = yaml.sync('config.yaml');
+let     resourcesPath   = path.join(__dirname, './resources')
+let config = yaml.sync(__dirname + '/config.yaml');
 let server = http.createServer( (request , response ) => {});
 let domain = 'web.sanguosha.com';
 let search = function( file ){
@@ -35,7 +36,7 @@ dns.lookup( domain,( err, address, family )=>{ //
                 if ( exis ) {
                     console.log('本地读取' , '文件名:',request.url)
                     //匹配到的就是我们要拦截的，读取我们自己的资源
-                    let file = fs.readFileSync('resources'+request.url);
+                    let file = fs.readFileSync(resourcesPath+'/'+request.url);
                     let contentType = mime.lookup(request.url);
                     response.writeHead(200, {'Content-Type': ''+contentType+'' });
                     response.write(new Buffer(file, 'binary'));
@@ -46,9 +47,9 @@ dns.lookup( domain,( err, address, family )=>{ //
                     let curl = 'curl  http://'+address+'/'+ arg.pathname +' -H "X-Forwarded-For: 1.1.1.1" -H "Host: '+ request.headers['host'] +'"';
                     let child = child_process.exec(curl,{encoding: 'binary',timeout:0,maxBuffer: 20000 * 10240} ,function(err, stdout, stderr ) {
                         let d = path.parse(arg.pathname);
-                        mkdirp('resources'+d.dir, (err)=> {
+                        mkdirp(resourcesPath+'/'+d.dir, (err)=> {
                             if (err) console.error(err)
-                            else fs.writeFile('resources'+d.dir+'/'+d.base,new Buffer(stdout, 'binary'),()=>{});
+                            else fs.writeFile(resourcesPath+'/'+d.dir+'/'+d.base,new Buffer(stdout, 'binary'),()=>{});
                         });
                         let contentType = mime.lookup(arg.pathname);
                         if( contentType == false ){

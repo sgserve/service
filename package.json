@@ -1,6 +1,6 @@
 {
   "name": "sgsc",
-  "version": "1.0.4",
+  "version": "1.0.9",
   "description": "三国杀资源替换工具",
   "main": "index.js",
   "dependencies": {

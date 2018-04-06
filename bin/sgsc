@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 const daemon = require('./daemon')
-const   hostile = require('hostile')
+const hostile = require('hostile')
 const EventEmitter = require('events').EventEmitter
 const pidpath   = path.join(__dirname, './../sgsc.pid')
 const command = new EventEmitter()
@@ -12,10 +12,11 @@ command.on('start', () => {
     let sgsc = daemon.createProcess(path.join(__dirname, './../index'))
     sgsc.on('message', message => {
         if(message.state === 1){
+            console.log(`\x1b[31msgsc: ${message.message}\x1b[0m`)
             fs.writeFileSync(pidpath, sgsc.pid)
              process.exit(0)
         }else{
-            console.log(`\x1b[31mupdns: ${message.message}\x1b[0m`)
+            console.log(`\x1b[31msgsc: ${message.message}\x1b[0m`)
         }
     })
 
