@@ -8,6 +8,9 @@ const EventEmitter = require('events').EventEmitter
 const pidpath   = path.join(__dirname, './../sgsc.pid')
 const command = new EventEmitter()
 let domain = 'web.sanguosha.com';
+
+
+//
 command.on('start', () => {
     let sgsc = daemon.createProcess(path.join(__dirname, './index'))
     sgsc.on('message', message => {
